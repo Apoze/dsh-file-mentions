@@ -79,9 +79,9 @@ externally can never be whitelisted by mistake.
 
 ## Requirements
 
-- DSH web >= 0.1.0-rc.6 (run with `npx @deepseek-ai/dsh web`)
-- **Version compatibility** (best effort — the settings card uses dual-field `key`+`id` registration to satisfy both rc.6 (`id`) and rc.7+ (`key`); verified locally on rc.6/rc.8/0.1.1-rc.2, **not guaranteed on every DSH version**):
-  - DSH 0.1.0-rc.6 and newer (incl. 0.1.1-rc.1/rc.2): try `main` (default).
+- DSH web >= 0.1.2-alpha.1 (run with `npx @deepseek-ai/dsh web`)
+- **Version compatibility**: `main` targets the current `uiConversation` client API in DSH
+  0.1.2-alpha.1 and newer.
   - Conservative fallbacks (the last pre-0.1.1 build): DSH 0.1.0-rc.7/rc.8 → `v1.0.8` (`dsh plugin add github:a903067276-rgb/dsh-file-mentions#v1.0.8`); DSH 0.1.0-rc.6 → frozen `rc6-compat` tag (no maintenance).
 - Pure Node stdlib implementation — peer dependencies (`@deepseek-ai/dsh-settings`,
   `@deepseek-ai/schemastery`) are provided by the host
@@ -97,7 +97,7 @@ externally can never be whitelisted by mistake.
   user-declared whitelist roots (stored via the official settings service — immediate
   effect, no restart); whitelist roots are protected against system disks and symlink
   escapes. Pure Node stdlib; `execFile` avoids shell injection.
-- **Client** (`lib/client.js`): a conversationEvents collector extracts paths from each
+- **Client** (`lib/client.js`): a `uiConversation` collector extracts paths from each
   reply → publishes them to turn data → the tail list filters non-existent paths before
   rendering; inline clicks use a **document-level click delegation** (the official render
   entry is occupied by the official "deliverables" plugin, so DOM delegation is the only

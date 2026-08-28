@@ -75,9 +75,8 @@ agent 回复里用反引号包路径（如 `` `~/docs/计划.md` ``）即可触�
 
 ## 环境要求
 
-- DSH web（≥ 0.1.0-rc.6）（`npx @deepseek-ai/dsh web` 启动）
-- **版本兼容**（尽力兼容——设置卡片用双字段 `key`+`id` 注册，同满足 rc.6（id 契约）与 rc.7+（key 契约）；已在本地实测 rc.6/rc.8/0.1.1-rc.2，**不保证每个 DSH 版本**）：
-  - DSH 0.1.0-rc.6 及以上（含 0.1.1-rc.1/rc.2）：装 `main`（默认）。
+- DSH web（≥ 0.1.2-alpha.1）（`npx @deepseek-ai/dsh web` 启动）
+- **版本兼容**：`main` 面向 DSH 0.1.2-alpha.1 及以上的当前 `uiConversation` 客户端 API。
   - 保守回退（升级前的最后版本）：DSH 0.1.0-rc.7/rc.8 → `v1.0.8`（`dsh plugin add github:a903067276-rgb/dsh-file-mentions#v1.0.8`）；DSH 0.1.0-rc.6 → 冻结 `rc6-compat`（不再维护）。
 - 纯 Node 标准库实现；peer 依赖（`@deepseek-ai/dsh-settings`、`@deepseek-ai/schemastery`）
   由宿主提供
@@ -92,7 +91,7 @@ agent 回复里用反引号包路径（如 `` `~/docs/计划.md` ``）即可触�
   探测面：绝对/`~/` 路径只在本会话 cwd 内或用户声明的白名单根内探测（白名单走官方
   settings 服务，保存即生效、无需重启）；白名单根带系统盘保护与 symlink 防逃逸。
   全部 Node 标准库，`execFile` 不经 shell 防注入。
-- **Client**（`lib/client.js`）：conversationEvents 收集器提取每轮回复里的路径 →
+- **Client**（`lib/client.js`）：`uiConversation` 收集器提取每轮回复里的路径 →
   发布到回合数据 → 尾部列表渲染前先过滤不存在的路径；正文可点用 **document 点击委托**
   （官方渲染入口被官方"产物"插件占用，无法扩展，这是唯一可行路径）；正文文件夹图标按钮用
   MutationObserver 动态补插，React 重渲染自动恢复；设置卡片（侧边栏分区 + 插件页）
