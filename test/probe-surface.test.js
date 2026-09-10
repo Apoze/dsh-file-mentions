@@ -9,13 +9,18 @@ import { apply } from '../lib/index.js'
 function routes(cwdDir) {
   const registered = new Map()
   const settingsStore = { extraProbeRoots: [] }
+  const settingsScope = {
+    get: () => settingsStore,
+    update: async (data) => { Object.assign(settingsStore, data) },
+  }
   apply({
     webServer: { register: (route) => (registered.set(route.path, route), () => undefined) },
     sessions: { get: () => ({ header: { cwd: cwdDir } }), list: () => [] },
-    inject: () => undefined,
-    get: (name) => name === 'settings'
-      ? { get: () => settingsStore, update: async (_ns, data) => { Object.assign(settingsStore, data) } }
-      : undefined,
+    inject: (_deps, mount) => mount({
+      settings: { register: () => settingsScope },
+      effect: (install) => { install() },
+    }),
+    get: () => undefined,
     effect: (mount) => { mount() },
   })
   return registered
@@ -60,8 +65,9 @@ async function checkOn(routesMap, paths) {
 // 外置盘/网络盘白名单加根目录（任意层级）后其下全部放行。
 test('marks home-directory files as valid without whitelist', async () => {
   const fakeHome = mkdtempSync(join(tmpdir(), 'fm-home-'))
-  const oldHome = process.env.HOME
-  process.env.HOME = fakeHome
+  const homeVariable = process.platform === 'win32' ? 'USERPROFILE' : 'HOME'
+  const oldHome = process.env[homeVariable]
+  process.env[homeVariable] = fakeHome
   const cwd = mkdtempSync(join(tmpdir(), 'fm-cwd-'))
   try {
     const homeFile = join(fakeHome, 'x.txt')
@@ -73,7 +79,7 @@ test('marks home-directory files as valid without whitelist', async () => {
     assert.ok(!body.valid.includes('/etc/hosts'), '系统盘路径不可探测')
     assert.ok(!body.valid.includes(tmpdir()), '无关目录不可探测')
   } finally {
-    process.env.HOME = oldHome
+    process.env[homeVariable] = oldHome
     rmSync(fakeHome, { recursive: true, force: true })
     rmSync(cwd, { recursive: true, force: true })
   }

@@ -10,6 +10,8 @@
 
 *Unofficial project: independently developed and maintained by a community member, not an official DeepSeek product.*
 
+The settings integration uses the scope returned by `settings.register()`, as required by DSH 0.1.2-rc.1 and 0.1.5-rc.1. Probe-root tests support the Windows home directory as well as POSIX systems.
+
 ## Screenshot
 
 ![dsh-file-mentions in action](assets/screenshot.png)
