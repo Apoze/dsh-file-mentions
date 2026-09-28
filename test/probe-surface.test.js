@@ -14,6 +14,7 @@ function routes(cwdDir) {
     update: async (data) => { Object.assign(settingsStore, data) },
   }
   apply({
+    settings: { update: async (_id, patch) => settingsScope.update(patch) },
     webServer: { register: (route) => (registered.set(route.path, route), () => undefined) },
     sessions: { get: () => ({ header: { cwd: cwdDir } }), list: () => [] },
     inject: (_deps, mount) => mount({
@@ -22,7 +23,7 @@ function routes(cwdDir) {
     }),
     get: () => undefined,
     effect: (mount) => { mount() },
-  })
+  }, { extraProbeRoots: { get: () => settingsStore.extraProbeRoots } })
   return registered
 }
 
