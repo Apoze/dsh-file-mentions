@@ -138,3 +138,5 @@ La version 1.1.1 lit les chemins depuis les données du tour DSH 0.2, ignore les
 ## DSH 0.2.1 compatibility
 
 This version targets DSH `0.2.1-alpha.4`; the manifest declares this tested runtime through `engines.dsh`. Earlier plugin versions remain available in Git history for DSH `0.2.0-rc.1`.
+
+Version 1.1.3 also resolves persisted sessions without activating an agent. File links work immediately after restarting DSH, including relative paths from cold session headers.

@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { test } from 'node:test'
 import { apply } from '../lib/index.js'
 
-function routes(cwdDir) {
+function routes(cwdDir, persistence) {
   const registered = new Map()
   const settingsStore = { extraProbeRoots: [] }
   const settingsScope = {
@@ -16,12 +16,12 @@ function routes(cwdDir) {
   apply({
     settings: { update: async (_id, patch) => settingsScope.update(patch) },
     webServer: { register: (route) => (registered.set(route.path, route), () => undefined) },
-    sessions: { get: () => ({ header: { cwd: cwdDir } }), list: () => [] },
+    sessions: { get: () => persistence ? undefined : ({ header: { cwd: cwdDir } }), list: () => [] },
     inject: (_deps, mount) => mount({
       settings: { register: () => settingsScope },
       effect: (install) => { install() },
     }),
-    get: () => undefined,
+    get: (name) => name === 'sessionPersistence' ? persistence : undefined,
     effect: (mount) => { mount() },
   }, { extraProbeRoots: { get: () => settingsStore.extraProbeRoots } })
   return registered
@@ -110,5 +110,53 @@ test('whitelist root opens the whole subtree (subdirectory levels included)', as
   } finally {
     rmSync(cwd, { recursive: true, force: true })
     rmSync(root, { recursive: true, force: true })
+  }
+})
+
+
+test('checks cold persisted sessions without activating them and rejects unknown ids', async () => {
+  const cwd = mkdtempSync(join(tmpdir(), 'fm-cold-'))
+  try {
+    writeFileSync(join(cwd, 'cold.txt'), 'persisted')
+    const persistence = {
+      stat: async id => id === 's1' ? { header: { cwd } } : undefined,
+      list: async () => [{ header: { cwd } }],
+    }
+    const registered = routes(cwd, persistence)
+    const res = response()
+    await registered.get('/api/file-mentions/check').handler(
+      request(JSON.stringify({ sessionId: 's1', paths: ['cold.txt'] })), res,
+    )
+    assert.equal(res.status, 200)
+    assert.deepEqual(res.body.valid, ['cold.txt'])
+    const missing = response()
+    await registered.get('/api/file-mentions/check').handler(
+      request(JSON.stringify({ sessionId: 'missing', paths: ['cold.txt'] })), missing,
+    )
+    assert.equal(missing.status, 400)
+    const absent = response()
+    await registered.get('/api/file-mentions/open').handler(
+      request(JSON.stringify({ sessionId: 's1', path: 'absent.txt' })), absent,
+    )
+    assert.equal(absent.status, 404)
+  } finally {
+    rmSync(cwd, { recursive: true, force: true })
+  }
+})
+
+test('resolves fallback directories from current persistence snapshots', async () => {
+  const cwd = mkdtempSync(join(tmpdir(), 'fm-current-'))
+  const other = mkdtempSync(join(tmpdir(), 'fm-other-'))
+  try {
+    writeFileSync(join(other, 'fallback.txt'), 'persisted')
+    const registered = routes(cwd, {
+      stat: async () => ({ header: { cwd } }),
+      list: async () => [{ header: { cwd: other } }],
+    })
+    const body = await checkOn(registered, ['fallback.txt'])
+    assert.deepEqual(body.valid, ['fallback.txt'])
+  } finally {
+    rmSync(cwd, { recursive: true, force: true })
+    rmSync(other, { recursive: true, force: true })
   }
 })
