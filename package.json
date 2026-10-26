@@ -1,6 +1,6 @@
 {
   "name": "dsh-file-mentions",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "Clickable file paths in DSH replies: open files/directories from inline paths (Codex-style), with a mentioned-files chip list as fallback",
   "type": "module",
   "main": "lib/index.js",
@@ -29,7 +29,8 @@
   ],
   "license": "MIT",
   "engines": {
-    "dsh": "0.2.1-alpha.4"
+    "dsh": "0.2.1-rc.3",
+    "node": ">=24.9.0"
   },
   "repository": {
     "type": "git",
@@ -49,12 +50,12 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "4.0.5-alpha.2",
-    "@deepseek-ai/dsh-settings": "0.2.1-alpha.4",
+    "@deepseek-ai/dsh-settings": "0.2.1-rc.3",
     "@deepseek-ai/schemastery": "3.18.5-alpha.2"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "4.0.5-alpha.2",
-    "@deepseek-ai/dsh-settings": "0.2.1-alpha.4",
+    "@deepseek-ai/dsh-settings": "0.2.1-rc.3",
     "@deepseek-ai/schemastery": "3.18.5-alpha.2"
   }
 }
